@@ -1,2 +1,14 @@
-# Crypto-Position-Calculator
-A simple, dark-themed crypto PnL &amp; risk calculator built with HTML, CSS, and JavaScript, hosted via Flask. Calculates optimal leverage, profit, loss, ROI, and position size for any trade based on your entry, stop loss, take profit, margin, and risk amount.
+# Crypto PnL + Risk Calculator
+
+A simple web-based calculator to determine **profit, loss, ROI, and optimal leverage** for cryptocurrency trades.  
+Built with **HTML, CSS, JavaScript** for the frontend and **Flask** for hosting.
+
+## 🚀 Features
+- Input **Entry Price**, **Stop Loss**, **Take Profit**
+- Input **Margin** and **Risk Amount** in USD
+- Calculates:
+  - Recommended leverage based on your risk
+  - Position size
+  - Profit & loss in USD
+  - ROI% for TP and SL
+- Dark minimal UI for better visibility
