@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto PnL + Risk Calculator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+    }
+    .calculator {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 380px;
+        width: 100%;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    input {
+        width: 100%;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        margin-top: 5px;
+    }
+    button {
+        margin-top: 15px;
+        padding: 10px;
+        background: #3b82f6;
+        border: none;
+        width: 100%;
+        border-radius: 6px;
+        font-weight: bold;
+        color: #fff;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #2563eb;
+    }
+    .result {
+        margin-top: 20px;
+        padding: 10px;
+        background: #334155;
+        border-radius: 6px;
+        line-height: 1.6;
+    }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+    <h2>Crypto PnL + Risk Calculator</h2>
+    
+    <label>Entry Price</label>
+    <input type="number" id="entryPrice" step="0.0000001">
+
+    <label>Stop Loss Price</label>
+    <input type="number" id="slPrice" step="0.0000001">
+
+    <label>Take Profit Price</label>
+    <input type="number" id="tpPrice" step="0.0000001">
+
+    <label>Margin (USD)</label>
+    <input type="number" id="margin" step="0.01">
+
+    <label>Risk Amount (USD)</label>
+    <input type="number" id="riskAmount" step="0.01">
+
+    <button onclick="calculatePnL()">Calculate</button>
+
+    <div class="result" id="resultBox">
+        Enter values and click calculate.
+    </div>
+</div>
+
+<script>
+function calculatePnL() {
+    let entry = parseFloat(document.getElementById("entryPrice").value);
+    let sl = parseFloat(document.getElementById("slPrice").value);
+    let tp = parseFloat(document.getElementById("tpPrice").value);
+    let margin = parseFloat(document.getElementById("margin").value);
+    let riskAmount = parseFloat(document.getElementById("riskAmount").value);
+
+    if (!entry || !sl || !tp || !margin || !riskAmount) {
+        document.getElementById("resultBox").innerHTML = "⚠ Please fill in all fields.";
+        return;
+    }
+
+    // % change to SL & TP
+    let lossPct = Math.abs((sl - entry) / entry);
+    let profitPct = Math.abs((tp - entry) / entry);
+
+    // Calculate leverage needed for the desired risk
+    let leverage = riskAmount / (margin * lossPct);
+
+    // Position size
+    let posSize = margin * leverage;
+
+    // PnL in USD
+    let lossUSD = lossPct * posSize;
+    let profitUSD = profitPct * posSize;
+
+    // ROI %
+    let lossROI = (lossUSD / margin) * 100;
+    let profitROI = (profitUSD / margin) * 100;
+
+    document.getElementById("resultBox").innerHTML = `
+        🎯 Recommended Leverage: <b>${leverage.toFixed(2)}×</b><br>
+        💼 Position Size: $${posSize.toFixed(2)}<br>
+        📉 Loss at SL: $${lossUSD.toFixed(2)} (${lossROI.toFixed(2)}% ROI)<br>
+        📈 Profit at TP: $${profitUSD.toFixed(2)} (${profitROI.toFixed(2)}% ROI)
+    `;
+}
+</script>
+
+</body>
+</html>
