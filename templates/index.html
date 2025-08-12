@@ -64,10 +64,10 @@
 <div class="calculator">
     <h2>Crypto PnL + Risk Calculator</h2>
     
-    <label>Entry Price</label>
+    <label>Entry Price*</label>
     <input type="number" id="entryPrice" step="0.0000001">
 
-    <label>Stop Loss Price</label>
+    <label>Stop Loss Price*</label>
     <input type="number" id="slPrice" step="0.0000001">
 
     <label>Take Profit Price</label>
@@ -79,10 +79,13 @@
     <label>Risk Amount (USD)</label>
     <input type="number" id="riskAmount" step="0.01">
 
+    <label>Leverage (optional)</label>
+    <input type="number" id="leverage" step="0.01">
+
     <button onclick="calculatePnL()">Calculate</button>
 
     <div class="result" id="resultBox">
-        Enter values and click calculate.
+        Enter SL & Entry Price to start.
     </div>
 </div>
 
@@ -93,36 +96,42 @@ function calculatePnL() {
     let tp = parseFloat(document.getElementById("tpPrice").value);
     let margin = parseFloat(document.getElementById("margin").value);
     let riskAmount = parseFloat(document.getElementById("riskAmount").value);
+    let leverageInput = parseFloat(document.getElementById("leverage").value);
 
-    if (!entry || !sl || !tp || !margin || !riskAmount) {
-        document.getElementById("resultBox").innerHTML = "⚠ Please fill in all fields.";
+    // Require at least SL & Entry
+    if (!entry || !sl) {
+        document.getElementById("resultBox").innerHTML = "⚠ Please fill in at least Entry Price and Stop Loss.";
         return;
     }
 
-    // % change to SL & TP
+    // Calculate % change to SL & TP
     let lossPct = Math.abs((sl - entry) / entry);
-    let profitPct = Math.abs((tp - entry) / entry);
+    let profitPct = tp ? Math.abs((tp - entry) / entry) : null;
 
-    // Calculate leverage needed for the desired risk
-    let leverage = riskAmount / (margin * lossPct);
+    let leverage, posSize, lossUSD, profitUSD, lossROI, profitROI;
 
-    // Position size
-    let posSize = margin * leverage;
+    // Only calculate if margin & risk are provided
+    if (margin && riskAmount) {
+        leverage = leverageInput ? leverageInput : (riskAmount / (margin * lossPct));
+        posSize = margin * leverage;
+        lossUSD = lossPct * posSize;
+        profitUSD = profitPct ? profitPct * posSize : null;
+        lossROI = (lossUSD / margin) * 100;
+        profitROI = profitUSD ? (profitUSD / margin) * 100 : null;
 
-    // PnL in USD
-    let lossUSD = lossPct * posSize;
-    let profitUSD = profitPct * posSize;
-
-    // ROI %
-    let lossROI = (lossUSD / margin) * 100;
-    let profitROI = (profitUSD / margin) * 100;
-
-    document.getElementById("resultBox").innerHTML = `
-        🎯 Recommended Leverage: <b>${leverage.toFixed(2)}×</b><br>
-        💼 Position Size: $${posSize.toFixed(2)}<br>
-        📉 Loss at SL: $${lossUSD.toFixed(2)} (${lossROI.toFixed(2)}% ROI)<br>
-        📈 Profit at TP: $${profitUSD.toFixed(2)} (${profitROI.toFixed(2)}% ROI)
-    `;
+        document.getElementById("resultBox").innerHTML = `
+            🎯 Leverage: <b>${leverage.toFixed(2)}×</b><br>
+            💼 Position Size: $${posSize.toFixed(2)}<br>
+            📉 Loss at SL: $${lossUSD.toFixed(2)} (${lossROI.toFixed(2)}% ROI)<br>
+            ${tp ? `📈 Profit at TP: $${profitUSD.toFixed(2)} (${profitROI.toFixed(2)}% ROI)` : ""}
+        `;
+    } else {
+        document.getElementById("resultBox").innerHTML = `
+            📉 Loss % from Entry to SL: ${(lossPct * 100).toFixed(2)}%<br>
+            ${tp ? `📈 Profit % from Entry to TP: ${(profitPct * 100).toFixed(2)}%` : ""}
+            <br>ℹ Add Margin & Risk Amount for full PnL details.
+        `;
+    }
 }
 </script>
 
